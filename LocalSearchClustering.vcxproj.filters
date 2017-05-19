@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Original">
+      <UniqueIdentifier>{19fbce0a-2194-409f-b2ab-af074dbcd261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\SortCandidateClusters">
+      <UniqueIdentifier>{2ac0dec7-bbc9-4ae3-861c-d6a98d0d2771}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\VariableDepthMethod">
+      <UniqueIdentifier>{0c9d983d-d3cd-4804-8ab9-463a1669d5f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\EjectionChainMethod">
+      <UniqueIdentifier>{2fbb6a02-7653-467e-a8e1-bf15c34f654d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="LocalSearchClustering.cpp">
+      <Filter>Source Files\Original</Filter>
+    </ClCompile>
+    <ClCompile Include="LocalSearchClustering2.cpp">
+      <Filter>Source Files\SortCandidateClusters</Filter>
+    </ClCompile>
+    <ClCompile Include="VariableDepthLSA.cpp">
+      <Filter>Source Files\VariableDepthMethod</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EjectionChainMethod.cpp">
+      <Filter>Source Files\EjectionChainMethod</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LocalSearchClustering.h">
+      <Filter>Source Files\Original</Filter>
+    </ClInclude>
+    <ClInclude Include="LocalSearchClustering2.h">
+      <Filter>Source Files\SortCandidateClusters</Filter>
+    </ClInclude>
+    <ClInclude Include="VariableDepthLSA.h">
+      <Filter>Source Files\VariableDepthMethod</Filter>
+    </ClInclude>
+    <ClInclude Include="EjectionChainMethod.h">
+      <Filter>Source Files\EjectionChainMethod</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
