@@ -354,15 +354,16 @@ void EjectionChainMethod::beginClustering() {
 					uint clusterB = (clusterA + 1) % cycleSize;
 
 //					cycleVertexCandidate *candidates = new cycleVertexCandidate[clusterSize[clusterA]];
-								
-					float bestSupportChange = -1;
-					uint bestVertIndex = -1;
 					
-					for (uint i = 0; i < clusterSize[clusterA]; i++) {
+					//best starting option is vertex at index 0
+					uint bestVertIndex = 0;
+					float bestSupportChange = clusteredVertexDegree[clusters[clusterA][0]][clusterB] - clusteredVertexDegree[clusters[clusterA][0]][clusterA];
+
+					for (uint i = 1; i < clusterSize[clusterA]; i++) {
 
 						uint vert = clusters[clusterA][i];					
 						//deg(u, B) - deg(u, A)
-						float supportChange = clusteredVertexDegree[vert][clusterB] - clusteredVertexDegree[vert][clusterA];;
+						float supportChange = clusteredVertexDegree[vert][clusterB] - clusteredVertexDegree[vert][clusterA];
 
 						if (supportChange > bestSupportChange) {
 							bestVertIndex = i;
