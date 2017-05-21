@@ -25,6 +25,11 @@ struct cycle {
 	float gain;
 };
 
+struct simpleCycle {
+	vector<uint> vertices;
+	uint startCluster;
+	float gain;
+};
 
 bool compareCycleVertexCandidate(cycleVertexCandidate a, cycleVertexCandidate b) {
 	return a.supportChange > b.supportChange;
@@ -321,53 +326,97 @@ void EjectionChainMethod::parseInput(string graphFile, string clusterFileIn) {
 
 
 void EjectionChainMethod::beginClustering() {
+	clock_t time = clock();
+
 	setupClusteredNeighbours();
 
-	vector<cycle> cycles;
+	//vector<cycle> cycles;
 
+	simpleCycle bestCycle;
 	float maxGain;
+
+
 	do {
+
+		maxGain = -1;
+		bestCycle.vertices.clear();
+
 		for (uint startClusterIndex = 0; startClusterIndex < clusterCount; startClusterIndex++) {
 			for (uint cycleSize = 2; cycleSize < clusterCount; cycleSize++) {
 			
-				vector<cycleVertexCandidate> cycleCandidate;
-			
+				//vector<cycleVertexCandidate> cycleCandidate;
+				
+				vector<uint> cycleCandidate;
+				float cycleGain = 0;
+
 				for (uint cycleIndex = 0; cycleIndex < cycleSize; cycleIndex++) { 
 					uint clusterA = (startClusterIndex + cycleIndex) % clusterCount;
 					uint clusterB = (clusterA + 1) % cycleSize;
 
-					cycleVertexCandidate *candidates = new cycleVertexCandidate[clusterSize[clusterA]];
-				
-				
+//					cycleVertexCandidate *candidates = new cycleVertexCandidate[clusterSize[clusterA]];
+								
+					float bestSupportChange = -1;
+					uint bestVertIndex = -1;
+					
 					for (uint i = 0; i < clusterSize[clusterA]; i++) {
 
 						uint vert = clusters[clusterA][i];					
-						candidates[i].vertexIndex = i;				
-
 						//deg(u, B) - deg(u, A)
-						candidates[i].supportChange = clusteredVertexDegree[vert][clusterB] - clusteredVertexDegree[vert][clusterA];				
-					}
-						
-					sort(candidates, candidates + clusterSize[clusterA], compareCycleVertexCandidate);
+						float supportChange = clusteredVertexDegree[vert][clusterB] - clusteredVertexDegree[vert][clusterA];;
 
-					cycleCandidate.push_back(candidates[0]);
+						if (supportChange > bestSupportChange) {
+							bestVertIndex = i;
+							bestSupportChange = supportChange;
+						}
+
+						/*
+						candidates[i].vertexIndex = i;										
+						candidates[i].supportChange = supportChange;
+						*/
+					}
+		
+					cycleGain += bestSupportChange;
+					cycleCandidate.push_back(bestVertIndex);
+
+					/*
+					sort(candidates, candidates + clusterSize[clusterA], compareCycleVertexCandidate);
+					cycleCandidate.push_back(candidates[0]);					
+					delete[] candidates;	
+					*/
+
+
+
 				}
 
+				if (cycleGain > maxGain) {
+					maxGain = cycleGain;
+					bestCycle.gain = maxGain;
+					bestCycle.startCluster = startClusterIndex;
+					bestCycle.vertices = cycleCandidate;
+				}
+
+				//OLD -- calculation of gain for each candidate cycle
+				/*				
 				float gain = 0;
 				for (int i = 0; i < cycleCandidate.size(); i++) {
 					gain += cycleCandidate[i].supportChange;
 				}
 
 				cycles.push_back({ cycleCandidate, startClusterIndex, gain });
+				*/
+
 			}
 		}
 
+		//OLD -- cyclic move
+		/*
 		sort(cycles.begin(), cycles.begin() + cycles.size(), compareCycles);
 		maxGain = cycles[0].gain;
 
 		//perform the cyclic move
 		cycle bestCycle = cycles[0];		
 		uint vertexToMove = bestCycle.vertices[0].vertexIndex;
+		
 
 		for (int i = 1; i < bestCycle.vertices.size(); i++) {
 			uint currCluster = (bestCycle.startCluster + i) % clusterCount;
@@ -382,12 +431,36 @@ void EjectionChainMethod::beginClustering() {
 
 			//update clusteredVertexDegree
 			updateNeighbour(vertexToMove, currCluster, prevCluster);
-		}		
+		}
+		*/
+
+		if (maxGain < 0) {
+			break;
+		}
+
+		//perform the cyclic moves
+		uint vertexToMove = bestCycle.vertices[0];
+
+		for (int i = 1; i < bestCycle.vertices.size(); i++) {
+			uint currCluster = (bestCycle.startCluster + i) % clusterCount;
+			uint prevCluster = (bestCycle.startCluster + i - 1) % clusterCount;
+
+			uint currCycleVertexIndex = bestCycle.vertices[i];
+			uint currVertex = clusters[currCluster][currCycleVertexIndex];
+
+			//perform the current cyclic move (shift)
+			clusters[currCluster][currCycleVertexIndex] = vertexToMove;
+			vertexToMove = currVertex;
+
+			//update clusteredVertexDegree
+			updateNeighbour(vertexToMove, currCluster, prevCluster);
+		}
 
 	} while (maxGain > 0);
 
 
-
+	time = clock() - time;
+	cout << "Clock ticks taken = " << time << endl;
 
 	outputClusters();
 }
