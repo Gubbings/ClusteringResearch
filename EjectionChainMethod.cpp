@@ -442,6 +442,8 @@ void EjectionChainMethod::beginClustering() {
 		//perform the cyclic moves
 		uint vertexToMove = bestCycle.vertices[0];
 
+		cout << "Cycle size: " << bestCycle.vertices.size() << " - Gain: " << bestCycle.gain << endl;
+
 		for (int i = 1; i < bestCycle.vertices.size(); i++) {
 			uint currCluster = (bestCycle.startCluster + i) % clusterCount;
 			uint prevCluster = (bestCycle.startCluster + i - 1) % clusterCount;

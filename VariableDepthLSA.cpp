@@ -281,6 +281,11 @@ void VariableDepthLSA::parseInput(string graphFile, string clusterFileIn) {
 			uint vertex;
 			while (!lineStream.eof()) {
 				lineStream >> tempString;
+
+				if (strcmp(tempString, "") == 0) {
+					break;
+				}
+
 				vertex = vertexMap.find(tempString)->second;
 				currentClusterCount++;
 				clusterTemp->push_back(vertex);
@@ -357,6 +362,10 @@ void VariableDepthLSA::beginClustering() {
 		for (uint clusterA = 0; clusterA < clusterCount - 1; clusterA++) {
 
 			for (uint clusterB = clusterA + 1; clusterB < clusterCount; clusterB++) {
+
+				if (clusterB == 681 && clusterA == 0) {
+					cout << "" << endl;
+				}
 
 				list<concreteSwap> gainSequence;
 
@@ -522,8 +531,8 @@ void VariableDepthLSA::beginClustering() {
 					clusters[clusterB][indexB] = temp;
 
 					//update cluster for these vertices
-					vertexCluster[indexA] = clusterB;
-					vertexCluster[indexB] = clusterA;
+					vertexCluster[(*i).vertexA] = clusterB;
+					vertexCluster[(*i).vertexB] = clusterA;
 
 					//update cluster index for these vertices
 					vertexClusterIndex[(*i).vertexA] = indexB;
@@ -531,6 +540,10 @@ void VariableDepthLSA::beginClustering() {
 
 					//currentIterationSwapCount++;
 					swapCount++;
+				}
+
+				if (vertexClusterIndex[3771] != 2) {
+					cout << "" << endl;
 				}
 			}
 		}
