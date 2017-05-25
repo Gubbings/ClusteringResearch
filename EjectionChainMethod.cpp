@@ -335,9 +335,42 @@ void EjectionChainMethod::beginClustering() {
 	simpleCycle bestCycle;
 	float maxGain;
 
+	//initialize array[clusterA][clusterB] = best vertex to move from clusterA to clusterB 
+	//each time you actually make the cyclic moves update the clusters that were affected
+	/*
+	pair<uint, float> **bestCycleCandidateFromAtoB = new pair<uint, float>*[clusterCount];
+	for (int i = 0; i < clusterCount; i++) {
+		bestCycleCandidateFromAtoB[i] = new pair<uint, float>[clusterCount];
+	}
+	
+	//select the best vertex in clusterA to cycle into clusterB for all clusters 0 to k
+	for (uint clusterA = 0; clusterA < clusterCount; clusterA++) {		
+		for(uint clusterB = 0; clusterB < clusterCount; clusterB++){
+			//uint clusterB = (clusterA + 1) % clusterCount;
+
+			//best starting option is vertex at index 0
+			uint bestVertIndex = 0;
+			float bestSupportChange = clusteredVertexDegree[clusters[clusterA][0]][clusterB] - clusteredVertexDegree[clusters[clusterA][0]][clusterA];
+
+			for (uint i = 1; i < clusterSize[clusterA]; i++) {
+
+				uint vert = clusters[clusterA][i];
+				//deg(u, B) - deg(u, A)
+				float supportChange = clusteredVertexDegree[vert][clusterB] - clusteredVertexDegree[vert][clusterA];
+
+				if (supportChange > bestSupportChange) {
+					bestVertIndex = i;
+					bestSupportChange = supportChange;
+				}
+			}
+
+			bestCycleCandidateFromAtoB[clusterA][clusterB].first = bestVertIndex;
+			bestCycleCandidateFromAtoB[clusterA][clusterB].second = bestSupportChange;
+		}
+	}
+	*/
 
 	do {
-
 		maxGain = -1;
 		bestCycle.vertices.clear();
 
@@ -352,9 +385,7 @@ void EjectionChainMethod::beginClustering() {
 				for (uint cycleIndex = 0; cycleIndex < cycleSize; cycleIndex++) { 
 					uint clusterA = (startClusterIndex + cycleIndex) % clusterCount;
 					uint clusterB = (clusterA + 1) % cycleSize;
-
-//					cycleVertexCandidate *candidates = new cycleVertexCandidate[clusterSize[clusterA]];
-					
+				
 					//best starting option is vertex at index 0
 					uint bestVertIndex = 0;
 					float bestSupportChange = clusteredVertexDegree[clusters[clusterA][0]][clusterB] - clusteredVertexDegree[clusters[clusterA][0]][clusterA];
@@ -370,23 +401,10 @@ void EjectionChainMethod::beginClustering() {
 							bestSupportChange = supportChange;
 						}
 
-						/*
-						candidates[i].vertexIndex = i;										
-						candidates[i].supportChange = supportChange;
-						*/
 					}
 		
 					cycleGain += bestSupportChange;
 					cycleCandidate.push_back(bestVertIndex);
-
-					/*
-					sort(candidates, candidates + clusterSize[clusterA], compareCycleVertexCandidate);
-					cycleCandidate.push_back(candidates[0]);					
-					delete[] candidates;	
-					*/
-
-
-
 				}
 
 				if (cycleGain > maxGain) {
@@ -395,45 +413,8 @@ void EjectionChainMethod::beginClustering() {
 					bestCycle.startCluster = startClusterIndex;
 					bestCycle.vertices = cycleCandidate;
 				}
-
-				//OLD -- calculation of gain for each candidate cycle
-				/*				
-				float gain = 0;
-				for (int i = 0; i < cycleCandidate.size(); i++) {
-					gain += cycleCandidate[i].supportChange;
-				}
-
-				cycles.push_back({ cycleCandidate, startClusterIndex, gain });
-				*/
-
 			}
 		}
-
-		//OLD -- cyclic move
-		/*
-		sort(cycles.begin(), cycles.begin() + cycles.size(), compareCycles);
-		maxGain = cycles[0].gain;
-
-		//perform the cyclic move
-		cycle bestCycle = cycles[0];		
-		uint vertexToMove = bestCycle.vertices[0].vertexIndex;
-		
-
-		for (int i = 1; i < bestCycle.vertices.size(); i++) {
-			uint currCluster = (bestCycle.startCluster + i) % clusterCount;
-			uint prevCluster = (bestCycle.startCluster + i - 1) % clusterCount;
-			
-			uint currCycleVertexIndex = bestCycle.vertices[i].vertexIndex;
-			uint currVertex = clusters[currCluster][currCycleVertexIndex];
-		
-			//perform the cyclic move
-			clusters[currCluster][currCycleVertexIndex] = vertexToMove;
-			vertexToMove = currVertex;
-
-			//update clusteredVertexDegree
-			updateNeighbour(vertexToMove, currCluster, prevCluster);
-		}
-		*/
 
 		if (maxGain < 0) {
 			break;
