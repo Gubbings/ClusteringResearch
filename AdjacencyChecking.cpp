@@ -1,4 +1,4 @@
-#include "LocalSearchClustering.h"
+#include "AdjacencyChecking.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <cstring>
 
-LocalSearchClustering::LocalSearchClustering(string graphFile, string clusterFile, string outputFile) {
+AdjacencyChecking::AdjacencyChecking(string graphFile, string clusterFile, string outputFile) {
 	this->outputFile = outputFile;
 
 	vertexCount = edgeCount = clusterCount = 0;
@@ -15,7 +15,7 @@ LocalSearchClustering::LocalSearchClustering(string graphFile, string clusterFil
 	parseInput(graphFile, clusterFile);
 }
 
-LocalSearchClustering::~LocalSearchClustering() {
+AdjacencyChecking::~AdjacencyChecking() {
 	delete[] vertexNames;
 
 	for (uint i = 0; i < vertexCount; i++) {
@@ -38,7 +38,7 @@ LocalSearchClustering::~LocalSearchClustering() {
 	delete[] clusterSize;
 }
 
-void LocalSearchClustering::parseInput(string graphFile, string clusterFileIn) {
+void AdjacencyChecking::parseInput(string graphFile, string clusterFileIn) {
 	//loop counter declared outside of the loop for optimization purposes
 	uint i;
 
@@ -245,7 +245,7 @@ void LocalSearchClustering::parseInput(string graphFile, string clusterFileIn) {
 				lineStream >> tempString;
 				vertex = vertexMap.find(tempString)->second;
 				currentClusterCount++;
-				clusterTemp->push_back(vertex);				
+				clusterTemp->push_back(vertex);
 			}
 
 			if (currentClusterCount > 1) {
@@ -268,6 +268,12 @@ void LocalSearchClustering::parseInput(string graphFile, string clusterFileIn) {
 
 	clusters = new uint*[clusterCount];
 	clusterSize = new uint[clusterCount];
+	vertexCluster = new uint[vertexCount];
+	vertexPositionInCluster = new uint[vertexCount];
+
+	for (uint i = 0; i < vertexCount; i++) {
+		vertexCluster[i] = -1;
+	}
 
 	//delete the temporary lists used that store the clusters and transfer to arrays
 	for (i = 0, clusterListItr = clusterListTemp->begin(); i < clusterCount; i++, clusterListItr++) {
@@ -279,6 +285,8 @@ void LocalSearchClustering::parseInput(string graphFile, string clusterFileIn) {
 
 		for (int j = 0; j < size; j++, clusterItr++) {
 			clusters[i][j] = *clusterItr;
+			vertexCluster[*clusterItr] = i;
+			vertexPositionInCluster[*clusterItr] = j;
 		}
 
 		clusterSize[i] = clusterSizeVec[i];
@@ -293,53 +301,68 @@ void LocalSearchClustering::parseInput(string graphFile, string clusterFileIn) {
 }
 
 
-void LocalSearchClustering::beginClustering() {
+void AdjacencyChecking::beginClustering() {
 	setupClusteredNeighbours();
 
 	clock_t time = clock();
 
-	int checkCount = 0;
 	int swapCount = 0;
 	bool swapped = false;
 
+	int checkCount = 0;
+
 	do {
 		swapped = false;
-		//attempt to swap vertices in distinct clusters
-		for (uint clusterA = 0; clusterA < clusterCount - 1; clusterA++) {
-			for (uint vertexIndexA = 0; vertexIndexA < clusterSize[clusterA]; vertexIndexA++) {
-				uint vertexA = clusters[clusterA][vertexIndexA];
-				for (uint clusterB = clusterA + 1; clusterB < clusterCount; clusterB++) {
-					for (uint vertexIndexB = 0; vertexIndexB < clusterSize[clusterB]; vertexIndexB++) {
-						uint vertexB = clusters[clusterB][vertexIndexB];
 
-						checkCount++;
+		for (uint incidentVertex = 0; incidentVertex < vertexCount; incidentVertex++) {
+			for (uint adjIndex = 0; adjIndex < adjVertsCount[incidentVertex]; adjIndex++) {
 
-						float degreeAB = 0;
+				checkCount++;
 
-						int other = find(graph[vertexA], vertexB, adjVertsCount[vertexA]);
-						if (other != -1) {
-							degreeAB = vertexWeights[vertexA][other];
-						}
+				uint terminalVertex = graph[incidentVertex][adjIndex];
 
-						float gain = degree(vertexA, clusterB) + degree(vertexB, clusterA) - 2 * degreeAB;
-						if (degree(vertexA, clusterB) + degree(vertexB, clusterA) - 2 * degreeAB > degree(vertexA, clusterA) + degree(vertexB, clusterB)) {
-							clusters[clusterA][vertexIndexA] = vertexB;
-							clusters[clusterB][vertexIndexB] = vertexA;
+				uint clusterA = vertexCluster[incidentVertex];
+				uint clusterB = vertexCluster[terminalVertex];
+
+				if (terminalVertex < incidentVertex || vertexCluster[incidentVertex] == vertexCluster[terminalVertex] || clusterA == -1 || clusterB == -1) {
+					continue;
+				}
+
+				float degreeAB = 0;
+
+				int other = find(graph[incidentVertex], terminalVertex, adjVertsCount[incidentVertex]);
+				if (other != -1) {
+					degreeAB = vertexWeights[incidentVertex][other];
+				}
 
 
-							updateNeighbour(vertexA, clusterB, clusterA);
-							updateNeighbour(vertexB, clusterA, clusterB);
 
-							cout << "Swapped " << vertexNames[vertexA] << " " << vertexNames[vertexB] << " Gain: " << gain << endl;
-							swapCount++;
+				float gain = degree(incidentVertex, clusterB) + degree(terminalVertex, clusterA) - 2 * degreeAB;
 
-							vertexA = vertexB;
-							swapped = true;
-						}
-					}
+				if (gain > degree(incidentVertex, clusterA) + degree(terminalVertex, clusterB)) {
+					
+					uint posA = vertexPositionInCluster[incidentVertex];
+					uint posB = vertexPositionInCluster[terminalVertex];
+					
+					clusters[clusterA][posA] = terminalVertex;
+					clusters[clusterB][posB] = incidentVertex;
+
+
+					updateNeighbour(incidentVertex, clusterB, clusterA);
+					updateNeighbour(terminalVertex, clusterA, clusterB);
+
+					vertexCluster[incidentVertex] = clusterB;
+					vertexCluster[terminalVertex] = clusterA;
+
+					vertexPositionInCluster[incidentVertex] = posB;
+					vertexPositionInCluster[terminalVertex] = posA;
+					
+					swapCount++;				
+					swapped = true;
 				}
 			}
 		}
+		
 	} while (swapped);
 
 	cout << "Number of Swaps: " << swapCount << endl;
@@ -348,13 +371,13 @@ void LocalSearchClustering::beginClustering() {
 	outputClusters();
 }
 
-void LocalSearchClustering::outputClusters() {
+void AdjacencyChecking::outputClusters() {
 	ofstream outStream(outputFile.c_str());
 
 	if (outStream.is_open()) {
 		for (uint i = 0; i < clusterCount; i++) {
 			for (uint j = 0; j < clusterSize[i]; j++) {
-				outStream << vertexNames[clusters[i][j]] << '\t';				
+				outStream << vertexNames[clusters[i][j]] << '\t';
 			}
 			outStream << '\n';
 		}
@@ -372,7 +395,7 @@ void LocalSearchClustering::outputClusters() {
 /*
 clusteredVertexDegree[VERTEX][CLUSTER] = support value of vertex in cluster
 */
-void LocalSearchClustering::setupClusteredNeighbours() {
+void AdjacencyChecking::setupClusteredNeighbours() {
 	clusteredVertexDegree = new float*[vertexCount];
 
 	for (uint i = 0; i < vertexCount; i++) {
@@ -391,20 +414,20 @@ void LocalSearchClustering::setupClusteredNeighbours() {
 	}
 }
 
-void LocalSearchClustering::updateNeighbour(uint vertex, uint clusterIn, uint clusterOut) {
+void AdjacencyChecking::updateNeighbour(uint vertex, uint clusterIn, uint clusterOut) {
 	for (uint i = 0; i < adjVertsCount[vertex]; i++) {
 		clusteredVertexDegree[graph[vertex][i]][clusterIn] += vertexWeights[vertex][i];
 		clusteredVertexDegree[graph[vertex][i]][clusterOut] -= vertexWeights[vertex][i];
 	}
 }
 
-float LocalSearchClustering::degree(uint vertex, uint cluster) {
+float AdjacencyChecking::degree(uint vertex, uint cluster) {
 	return clusteredVertexDegree[vertex][cluster];
 }
 
 
 template<typename T>
-int LocalSearchClustering::find(const T *arr, T key, const int length) {
+int AdjacencyChecking::find(const T *arr, T key, const int length) {
 	for (int i = 0; i < length; i++) {
 		if (arr[i] == key) {
 			return i;
@@ -415,7 +438,7 @@ int LocalSearchClustering::find(const T *arr, T key, const int length) {
 }
 
 template<typename T>
-bool LocalSearchClustering::contains(const T *arr, const T key, const int length) {
+bool AdjacencyChecking::contains(const T *arr, const T key, const int length) {
 	for (int i = 0; i < length; i++) {
 		if (arr[i] == key) {
 			return true;
@@ -427,7 +450,7 @@ bool LocalSearchClustering::contains(const T *arr, const T key, const int length
 
 
 template<typename T>
-bool LocalSearchClustering::contains(const vector<T> vec, const T key) {
+bool AdjacencyChecking::contains(const vector<T> vec, const T key) {
 	for (uint i = 0; i < vec.size(); i++) {
 		if (vec[i] == key) {
 			return true;

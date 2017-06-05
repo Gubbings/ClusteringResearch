@@ -11,10 +11,10 @@ typedef unsigned int     uint;
 
 using namespace std;
 
-class VariableDepthLSA {
+class AdjacencyChecking {
 public:
-	VariableDepthLSA(string graphFile, string clusterFile, string outputFile);
-	~VariableDepthLSA();
+	AdjacencyChecking(string graphFile, string clusterFile, string outputFile);
+	~AdjacencyChecking();
 	void beginClustering();
 
 private:
@@ -35,14 +35,10 @@ private:
 	string outputFile;
 	uint swapCount;
 
-	/*
-	float externalCost(uint vertex, uint clusterIndexB);
-	float internalCost(uint vertex, uint clusterIndexA);
-	float cost(uint vertex, uint clusterIndexA, uint clusterIndexB);
-	*/
+	float degree(uint vertex, uint cluster);
 	void parseInput(string graphFile, string clusterFileIn);
 	void outputClusters();
-	void setupClusteredNeighbours(uint clusterIndex);
+	void setupClusteredNeighbours();
 	void updateNeighbour(uint vertex, uint clusterIn, uint clusterOut);
 
 	template<typename T>

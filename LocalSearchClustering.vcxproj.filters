@@ -25,6 +25,9 @@
     <Filter Include="Source Files\EjectionChainMethod">
       <UniqueIdentifier>{2fbb6a02-7653-467e-a8e1-bf15c34f654d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AdjacencyChecking">
+      <UniqueIdentifier>{3092aabb-f1f1-4cdb-a007-fb3c3ba43dc3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LocalSearchClustering.cpp">
@@ -42,6 +45,9 @@
     <ClCompile Include="EjectionChainMethod.cpp">
       <Filter>Source Files\EjectionChainMethod</Filter>
     </ClCompile>
+    <ClCompile Include="AdjacencyChecking.cpp">
+      <Filter>Source Files\AdjacencyChecking</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LocalSearchClustering.h">
@@ -55,6 +61,9 @@
     </ClInclude>
     <ClInclude Include="EjectionChainMethod.h">
       <Filter>Source Files\EjectionChainMethod</Filter>
+    </ClInclude>
+    <ClInclude Include="AdjacencyChecking.h">
+      <Filter>Source Files\AdjacencyChecking</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

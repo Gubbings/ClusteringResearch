@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AdjacencyChecking.cpp" />
     <ClCompile Include="EjectionChainMethod.cpp" />
     <ClCompile Include="LocalSearchClustering.cpp" />
     <ClCompile Include="LocalSearchClustering2.cpp" />
@@ -153,6 +154,7 @@
     <ClCompile Include="VariableDepthLSA.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AdjacencyChecking.h" />
     <ClInclude Include="EjectionChainMethod.h" />
     <ClInclude Include="LocalSearchClustering.h" />
     <ClInclude Include="LocalSearchClustering2.h" />

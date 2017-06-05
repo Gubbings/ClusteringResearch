@@ -312,7 +312,7 @@ void VariableDepthLSA::parseInput(string graphFile, string clusterFileIn) {
 	clusters = new uint*[clusterCount];
 	clusterSize = new uint[clusterCount];
 	vertexCluster = new uint[vertexCount];
-	vertexClusterIndex = new uint[vertexCount];
+	vertexPositionInCluster = new uint[vertexCount];
 
 	//delete the temporary lists used that store the clusters and transfer to arrays
 	for (i = 0, clusterListItr = clusterListTemp->begin(); i < clusterCount; i++, clusterListItr++) {
@@ -325,7 +325,7 @@ void VariableDepthLSA::parseInput(string graphFile, string clusterFileIn) {
 		for (int j = 0; j < size; j++, clusterItr++) {
 			clusters[i][j] = *clusterItr;
 			vertexCluster[*clusterItr] = i;
-			vertexClusterIndex[*clusterItr] = j;
+			vertexPositionInCluster[*clusterItr] = j;
 		}
 
 		clusterSize[i] = clusterSizeVec[i];
@@ -523,8 +523,8 @@ void VariableDepthLSA::beginClustering() {
 				list<concreteSwap>::iterator i = gainSequence.begin();
 				for (k = 0; k <= bestGainIndex; k++, i++) {
 					//perform the swap				
-					int indexA = vertexClusterIndex[(*i).vertexA];
-					int indexB = vertexClusterIndex[(*i).vertexB];
+					int indexA = vertexPositionInCluster[(*i).vertexA];
+					int indexB = vertexPositionInCluster[(*i).vertexB];
 
 					uint temp = clusters[clusterA][indexA];
 					clusters[clusterA][indexA] = clusters[clusterB][indexB];
@@ -535,14 +535,14 @@ void VariableDepthLSA::beginClustering() {
 					vertexCluster[(*i).vertexB] = clusterA;
 
 					//update cluster index for these vertices
-					vertexClusterIndex[(*i).vertexA] = indexB;
-					vertexClusterIndex[(*i).vertexB] = indexA;
+					vertexPositionInCluster[(*i).vertexA] = indexB;
+					vertexPositionInCluster[(*i).vertexB] = indexA;
 
 					//currentIterationSwapCount++;
 					swapCount++;
 				}
 
-				if (vertexClusterIndex[3771] != 2) {
+				if (vertexPositionInCluster[3771] != 2) {
 					cout << "" << endl;
 				}
 			}

@@ -5,6 +5,7 @@
 #include "LocalSearchClustering2.h"
 #include "VariableDepthLSA.h"
 #include "EjectionChainMethod.h"
+#include "AdjacencyChecking.h"
 
 using namespace std;
 
@@ -13,7 +14,7 @@ int main(int argc, char *argv[]) {
 	string in = "in.txt";
 	string clusters = "in.cluster";
 	string out = "out.txt";
-	int mode = 2;
+	int mode = 3;
 
 	if (argc != 5) {
 		cout << "Arguments not properly specified using defaults. " << endl;
@@ -37,6 +38,10 @@ int main(int argc, char *argv[]) {
 	else if (mode == 2) {
 		EjectionChainMethod ejectionChainMethod(in, clusters, out);
 		ejectionChainMethod.beginClustering();
+	}
+	else if (mode == 3) {
+		AdjacencyChecking adjChecking(in, clusters, out);
+		adjChecking.beginClustering();
 	}
 	
 

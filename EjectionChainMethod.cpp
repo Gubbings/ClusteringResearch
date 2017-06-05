@@ -330,14 +330,14 @@ void EjectionChainMethod::beginClustering() {
 
 	setupClusteredNeighbours();
 
-	//vector<cycle> cycles;
+	//DEBUGGING
+	int gain = 0;
 
 	simpleCycle bestCycle;
 	float maxGain;
 
 	//initialize array[clusterA][clusterB] = best vertex to move from clusterA to clusterB 
 	//each time you actually make the cyclic moves update the clusters that were affected
-	/*
 	pair<uint, float> **bestCycleCandidateFromAtoB = new pair<uint, float>*[clusterCount];
 	for (int i = 0; i < clusterCount; i++) {
 		bestCycleCandidateFromAtoB[i] = new pair<uint, float>[clusterCount];
@@ -368,12 +368,13 @@ void EjectionChainMethod::beginClustering() {
 			bestCycleCandidateFromAtoB[clusterA][clusterB].second = bestSupportChange;
 		}
 	}
-	*/
+	
 
 	do {
 		maxGain = -1;
 		bestCycle.vertices.clear();
 
+		//find all forward cycles
 		for (uint startClusterIndex = 0; startClusterIndex < clusterCount; startClusterIndex++) {
 			for (uint cycleSize = 2; cycleSize < clusterCount; cycleSize++) {
 			
@@ -385,7 +386,14 @@ void EjectionChainMethod::beginClustering() {
 				for (uint cycleIndex = 0; cycleIndex < cycleSize; cycleIndex++) { 
 					uint clusterA = (startClusterIndex + cycleIndex) % clusterCount;
 					uint clusterB = (clusterA + 1) % cycleSize;
-				
+
+					
+					cycleCandidate.push_back(bestCycleCandidateFromAtoB[clusterA][clusterB].first);
+					cycleGain += bestCycleCandidateFromAtoB[clusterA][clusterB].second;
+
+					//OLD - finding best vertex to add to cycle
+					/*					
+		
 					//best starting option is vertex at index 0
 					uint bestVertIndex = 0;
 					float bestSupportChange = clusteredVertexDegree[clusters[clusterA][0]][clusterB] - clusteredVertexDegree[clusters[clusterA][0]][clusterA];
@@ -405,6 +413,7 @@ void EjectionChainMethod::beginClustering() {
 		
 					cycleGain += bestSupportChange;
 					cycleCandidate.push_back(bestVertIndex);
+					*/
 				}
 
 				if (cycleGain > maxGain) {
@@ -416,9 +425,13 @@ void EjectionChainMethod::beginClustering() {
 			}
 		}
 
+
+		//do not allow for negative impact on the clusters
 		if (maxGain < 0) {
 			break;
 		}
+
+
 
 		//perform the cyclic moves
 		uint vertexToMove = bestCycle.vertices[0];
@@ -440,7 +453,35 @@ void EjectionChainMethod::beginClustering() {
 			updateNeighbour(vertexToMove, currCluster, prevCluster);
 		}
 
-	} while (maxGain > 0);
+		gain += bestCycle.gain;
+
+		//update bestCycleCandidateFromAtoB based on the cyclic moves performed
+		for (int i = 0; i < bestCycle.vertices.size(); i++) {
+			uint clusterA = (bestCycle.startCluster + i) % clusterCount;
+
+			for (uint clusterB = 0; clusterB < clusterCount; clusterB++) {				
+				//best starting option is vertex at index 0
+				uint bestVertIndex = 0;
+				float bestSupportChange = clusteredVertexDegree[clusters[clusterA][0]][clusterB] - clusteredVertexDegree[clusters[clusterA][0]][clusterA];
+
+				for (uint i = 1; i < clusterSize[clusterA]; i++) {
+
+					uint vert = clusters[clusterA][i];
+					//deg(u, B) - deg(u, A)
+					float supportChange = clusteredVertexDegree[vert][clusterB] - clusteredVertexDegree[vert][clusterA];
+
+					if (supportChange > bestSupportChange) {
+						bestVertIndex = i;
+						bestSupportChange = supportChange;
+					}
+				}
+
+				bestCycleCandidateFromAtoB[clusterA][clusterB].first = bestVertIndex;
+				bestCycleCandidateFromAtoB[clusterA][clusterB].second = bestSupportChange;
+			}
+		}
+
+	} while (maxGain > 0 && gain < 2000);
 
 
 	time = clock() - time;
